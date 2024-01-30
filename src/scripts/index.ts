@@ -1,64 +1,111 @@
-import { CaveGenerator } from './CaveGenerator';
-// @ts-expect-error -- TS doesn't understand Parcel's ability to import image files
-import caveTiles from '../img/cave_tiles.png';
+/// <reference types="@webgpu/types" />
 
-// DOM elements
-const caveTilesImg = document.getElementById('cave_tiles') as HTMLImageElement | null;
-const canvas = document.querySelector<HTMLCanvasElement>('canvas.cave-generator');
-const context = canvas?.getContext('2d');
+async function init() {
+  /*
+   ┍━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━┑
+   │ 0. CANVAS & DEVICE SETUP        │
+   ┕━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━┙
+   */
+  if (!navigator.gpu) throw Error('WebGPU not supported');
 
-const showGridCheckbox = document.getElementById('show-grid') as HTMLInputElement | null;
-const sizeSelector = document.getElementById('size') as HTMLSelectElement | null;
+  const adapter = await navigator.gpu.requestAdapter();
 
-const regenerateButton = document.getElementById('regenerate') as HTMLButtonElement | null;
-const downloadButton = document.getElementById('download') as HTMLButtonElement | null;
+  if (!adapter) throw Error("Couldn't request WebGPU adapter");
 
-const caveGenerator = new CaveGenerator(context, caveTilesImg);
+  const canvas = document.querySelector<HTMLCanvasElement>('canvas.cave-generator');
 
-if (caveTilesImg) {
-  caveTilesImg.onload = () => {
-    caveGenerator.generate();
+  if (!canvas) throw Error("Couldn't find the canvas");
+
+  const device = await adapter.requestDevice();
+  const context = canvas.getContext('webgpu');
+
+  if (!context) throw Error("Couldn't get canvas context");
+
+  const canvasFormat = navigator.gpu.getPreferredCanvasFormat();
+  context.configure({ device, format: canvasFormat });
+
+  /*
+   ┍━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━┑
+   │ 1. DRAW A SQUARE                │
+   ┕━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━┙
+   */
+  const vertices = new Float32Array([
+    // Triangle 1 [ x,y, x,y, ...]
+    -0.8, -0.8, 0.8, -0.8, 0.8, 0.8,
+    // Triangle 2 [ x,y, x,y, ...]
+    -0.8, -0.8, 0.8, 0.8, -0.8, 0.8,
+  ]);
+
+  const vertexBuffer = device.createBuffer({
+    label: 'Cell vertices',
+    size: vertices.byteLength,
+    usage: GPUBufferUsage.VERTEX | GPUBufferUsage.COPY_DST,
+  });
+
+  device.queue.writeBuffer(vertexBuffer, /*bufferOffset=*/ 0, vertices);
+
+  const vertexBufferLayout: GPUVertexBufferLayout = {
+    arrayStride: 8,
+    attributes: [
+      {
+        format: 'float32x2',
+        offset: 0,
+        shaderLocation: 0, // Position, see vertex shader
+      },
+    ],
   };
-  caveTilesImg.src = caveTiles;
-} else {
-  throw new Error("Couldn't find tileset img");
+
+  const cellShaderModule = device.createShaderModule({
+    label: 'Cell shader',
+    code: /*wgsl*/ `
+      @vertex
+      fn vertexMain(@location(0) pos: vec2f) -> @builtin(position) vec4f {
+        return vec4f(pos, 0, 1);
+      }
+
+      @fragment
+      fn fragmentMain() -> @location(0) vec4f {
+        return vec4f(1, 0, 0, 1); // (Red, Green, Blue, Alpha)
+      }
+    `,
+  });
+
+  const cellPipeline = device.createRenderPipeline({
+    label: 'Cell pipeline',
+    layout: 'auto',
+    vertex: {
+      module: cellShaderModule,
+      entryPoint: 'vertexMain',
+      buffers: [vertexBufferLayout],
+    },
+    fragment: {
+      module: cellShaderModule,
+      entryPoint: 'fragmentMain',
+      targets: [{ format: canvasFormat }],
+    },
+  });
+
+  const encoder = device.createCommandEncoder();
+
+  const pass = encoder.beginRenderPass({
+    colorAttachments: [
+      {
+        view: context.getCurrentTexture().createView(),
+        loadOp: 'clear',
+        clearValue: { r: 0, g: 0, b: 0.4, a: 1 },
+        storeOp: 'store',
+      },
+    ],
+  });
+
+  pass.setPipeline(cellPipeline);
+  pass.setVertexBuffer(0, vertexBuffer);
+  pass.draw(vertices.length / 2);
+
+  pass.end();
+
+  // Finish the command buffer and immediately submit it.
+  device.queue.submit([encoder.finish()]);
 }
 
-// Event listeners
-showGridCheckbox?.addEventListener('change', (e) => {
-  const target = e.target as HTMLInputElement | null;
-  if (!target) return;
-
-  caveGenerator.showGrid = target.checked;
-});
-
-sizeSelector?.addEventListener('change', (e) => {
-  const target = e.target as HTMLSelectElement | null;
-  if (!target) return;
-
-  caveGenerator.cellSize = target.value;
-});
-
-regenerateButton?.addEventListener('click', () => {
-  const params = new URLSearchParams(window.location.search);
-
-  if (params.size) {
-    // Remove seed when regenerating
-    window.history.pushState({}, document.title, document.location.pathname);
-  }
-
-  caveGenerator.generate();
-});
-
-downloadButton?.addEventListener('click', () => {
-  if (!canvas) return;
-
-  const link = document.createElement('a');
-
-  link.download = 'cave.png';
-  link.href = canvas.toDataURL();
-
-  document.body.appendChild(link);
-  link.click();
-  document.body.removeChild(link);
-});
+init();
