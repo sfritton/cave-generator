@@ -1,5 +1,9 @@
 @import 'footer.css';
 
+@view-transition {
+  navigation: auto;
+}
+
 :root {
   --link-color: #fc9;
   --link-color-hover: rgb(255, 214, 174);

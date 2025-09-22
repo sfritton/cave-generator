@@ -34,6 +34,7 @@ main {
 
 
   & .cave-generator {
+    view-transition-name: cave-generator;
     display: block;
     max-width: 100%;
     margin: var(--gap) 0;
