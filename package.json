@@ -6,7 +6,7 @@
   "scripts": {
     "start": "parcel",
     "build": "parcel build",
-    "publish": "echo '\nCLEANING UP...\n' && rm -rf .parcel-cache dist docs && echo '\nBUILDING...\n' && npm run build && echo '\nPUBLISHING...\n' && git add -Af docs && git commit --allow-empty -m 'Publish' && git push && echo '\nPUBLISHED.'"
+    "publish": "echo '\nCLEANING UP...\n' && rm -rf .parcel-cache dist docs && echo '\nBUILDING...\n' && npm run build && touch docs/.nojekyll && echo '\nPUBLISHING...\n' && git add -Af docs && git commit --allow-empty -m 'Publish' && git push && echo '\nPUBLISHED.'"
   },
   "repository": {
     "type": "git",
