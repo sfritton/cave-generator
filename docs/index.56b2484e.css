@@ -1,0 +1,349 @@
+main {
+  --gap: 20px;
+  --canvas-width: 1024px;
+  --radius: 2px;
+  --hover-shadow: 0px 0px 8px 2px #fc9;
+  max-width: calc(var(--canvas-width)  + calc(var(--gap) * 2));
+  padding: var(--gap);
+  margin: 20px auto 0;
+}
+
+main .tiles {
+  width: 224px;
+  height: 96px;
+  position: relative;
+}
+
+main .tiles #cave_tiles {
+  object-fit: cover;
+  object-position: left top;
+  width: 100%;
+  height: 100%;
+}
+
+main .tiles:after {
+  content: "";
+  background-image: linear-gradient(#000 .5px, #0000 .5px, #0000 calc(100% - .5px), #000 calc(100% - .5px)), linear-gradient(90deg, #000 .5px, #0000 .5px, #0000 calc(100% - .5px), #000 calc(100% - .5px));
+  background-size: 32px 32px;
+  width: 100%;
+  height: 100%;
+  position: absolute;
+  top: 0;
+  left: 0;
+}
+
+main .cave-generator {
+  view-transition-name: cave-generator;
+  margin: var(--gap) 0;
+  max-width: 100%;
+  display: block;
+}
+
+main label[for="show-grid"] {
+  cursor: pointer;
+  flex-shrink: 0;
+  align-items: center;
+  gap: 8px;
+  font-size: 14px;
+  transition: color .3s;
+  display: inline-flex;
+}
+
+main label[for="show-grid"] input {
+  opacity: 0;
+  width: 0;
+  height: 0;
+  display: block;
+  position: absolute;
+  overflow: hidden;
+}
+
+main label[for="show-grid"] .checkbox {
+  border-radius: var(--radius);
+  outline-offset: -1px;
+  background: #000;
+  border: 1px solid #d6d6d6;
+  outline: 2px solid #0000;
+  width: 20px;
+  height: 20px;
+  transition: outline .3s, box-shadow .3s;
+  display: inline-block;
+  position: relative;
+}
+
+main label[for="show-grid"] input:checked ~ .checkbox:after {
+  content: "✔";
+  color: #fff;
+  justify-content: center;
+  align-items: center;
+  width: 100%;
+  height: 100%;
+  padding-bottom: 3px;
+  padding-left: 2px;
+  font-size: 20px;
+  display: flex;
+  position: absolute;
+  top: 0;
+  bottom: 0;
+  left: 0;
+  right: 0;
+}
+
+main label[for="show-grid"]:hover {
+  color: #fc9;
+}
+
+main label[for="show-grid"]:hover .checkbox {
+  outline: 2px solid #fc9;
+}
+
+main label[for="show-grid"]:focus-within {
+  color: #fc9;
+}
+
+main label[for="show-grid"]:focus-within .checkbox {
+  outline: 2px solid #fc9;
+}
+
+:is() .checkbox {
+  outline: 2px solid #fc9;
+}
+
+main label[for="show-grid"]:hover .checkbox {
+  box-shadow: var(--hover-shadow);
+}
+
+main .form {
+  margin: 0 auto var(--gap);
+  gap: var(--gap);
+  flex-direction: column;
+  max-width: 640px;
+  display: flex;
+}
+
+@media (min-width: 668px) {
+  main .form {
+    -webkit-backdrop-filter: blur(2px);
+    backdrop-filter: blur(2px);
+    background: #000a;
+    border-radius: 8px;
+    flex-direction: row;
+    justify-content: center;
+    align-items: center;
+    gap: 32px;
+    padding: 16px 20px;
+    position: -webkit-sticky;
+    position: sticky;
+    bottom: 8px;
+  }
+}
+
+main .input {
+  flex-grow: 1;
+  grid-template-rows: auto auto;
+  gap: 8px;
+  transition: color .3s;
+  display: grid;
+  position: relative;
+}
+
+@media (min-width: 668px) {
+  main .input {
+    grid-template-rows: auto;
+    grid-template-columns: auto 1fr;
+    align-items: center;
+  }
+}
+
+main .input label {
+  pointer-events: none;
+  font-size: 14px;
+}
+
+main .input select, main .input input {
+  color: #fff;
+  font-size: 16px;
+  font-family: var(--mono);
+  cursor: pointer;
+  border-radius: var(--radius);
+  outline-offset: -1px;
+  -webkit-appearance: none;
+  appearance: none;
+  background: #000;
+  border: 1px solid #d6d6d6;
+  outline: 2px solid #0000;
+  height: 40px;
+  padding: 8px 47px 8px 16px;
+  transition: outline .3s, box-shadow .3s;
+}
+
+:is(main .input select, main .input input):hover {
+  box-shadow: var(--hover-shadow);
+}
+
+main .input:has(select):after {
+  content: "⌄";
+  color: #e8e8e8;
+  pointer-events: none;
+  align-items: center;
+  height: 50px;
+  font-size: 16px;
+  display: flex;
+  position: absolute;
+  bottom: 0;
+  right: 16px;
+  transform: scaleX(1.5);
+}
+
+main .input:has(input:hover) {
+  color: #fc9;
+}
+
+main .input:has(input:hover) input, main .input:has(input:hover) select {
+  outline: 2px solid #fc9;
+}
+
+main .input:has(select:hover) {
+  color: #fc9;
+}
+
+main .input:has(select:hover) input, main .input:has(select:hover) select {
+  outline: 2px solid #fc9;
+}
+
+main .input:has(input:focus-visible) {
+  color: #fc9;
+}
+
+main .input:has(input:focus-visible) input, main .input:has(input:focus-visible) select {
+  outline: 2px solid #fc9;
+}
+
+main .input:has(select:focus-visible) {
+  color: #fc9;
+}
+
+main .input:has(select:focus-visible) input, main .input:has(select:focus-visible) select {
+  outline: 2px solid #fc9;
+}
+
+:is() input, :is() select {
+  outline: 2px solid #fc9;
+}
+
+main button {
+  font-family: var(--mono);
+  border-radius: var(--radius);
+  cursor: pointer;
+  color: #333;
+  background: #fc9;
+  border: none;
+  flex-grow: 1;
+  justify-content: center;
+  align-items: center;
+  min-width: 140px;
+  height: 40px;
+  padding: 8px 16px;
+  font-size: 16px;
+  transition: background .3s, opacity .3s .6s;
+  display: inline-flex;
+  position: relative;
+  overflow: hidden;
+}
+
+main button.full-width {
+  width: 100%;
+  margin: 0 auto;
+  display: flex;
+}
+
+@media (min-width: 668px) {
+  main button.full-width {
+    max-width: 600px;
+    height: 50px;
+    font-size: 18px;
+  }
+}
+
+main button .icon {
+  margin-right: 8px;
+  padding-bottom: 2px;
+  font-size: 24px;
+  display: inline-block;
+}
+
+main button[disabled] {
+  opacity: .5;
+  cursor: not-allowed;
+  transition-delay: 0s;
+}
+
+main button:after {
+  content: "";
+  background: #f96;
+  width: 100%;
+  height: 4px;
+  transition: transform .3s, background .3s;
+  position: absolute;
+  bottom: 0;
+  transform: scaleX(0);
+}
+
+main button:hover:not([disabled]) {
+  background: #ffd6ae;
+}
+
+main button:hover:not([disabled]):after {
+  transform: scaleX(1);
+}
+
+main button:active:not([disabled]) {
+  background: #f96;
+}
+
+main button.secondary {
+  color: #fc9;
+  background: #000;
+  border: 1px solid #fc9;
+  transition: color .3s, border-color .3s, opacity .3s .6s, box-shadow .3s;
+}
+
+main button.secondary[disabled] {
+  transition-delay: 0;
+}
+
+main button.secondary:after {
+  background: #ffd6ae;
+  height: 3px;
+}
+
+main button.secondary:hover:not([disabled]) {
+  color: #ffd6ae;
+  box-shadow: var(--hover-shadow);
+  background: #000;
+  border-color: #ffd6ae;
+}
+
+main button.secondary:active:not([disabled]) {
+  color: #f96;
+  background: #000;
+  border-color: #f96;
+}
+
+main button.secondary:active:not([disabled]):after {
+  background: #f96;
+}
+
+main section {
+  max-width: 600px;
+  margin: 0 auto;
+}
+
+main section.how-it-works img {
+  margin: var(--gap) 0;
+  aspect-ratio: 4 / 3;
+  max-width: 100%;
+  display: block;
+}
+
+/*# sourceMappingURL=index.56b2484e.css.map */
